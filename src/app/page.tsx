@@ -8,7 +8,7 @@ import dynamic from "next/dynamic";
 
 // Use dynamic import for the FlowDiagram component
 const FlowDiagram = dynamic(
-  () => import('@/components/FlowDiagram'),
+  () => import('../components/FlowDiagram'),
   { ssr: false }
 );
 

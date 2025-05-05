@@ -45,9 +45,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 
 To generate TypeScript types from your Supabase database schema:
 
-1. Install the Supabase CLI:
+1. Install the Supabase CLI [for your system](https://github.com/supabase/cli#install-the-cli):
 ```bash
-npm install -g supabase
+npm i supabase --save-dev
 ```
 
 2. Login to Supabase:
@@ -56,6 +56,13 @@ supabase login
 ```
 
 3. Generate types:
+
+1. Create a directory for types if it doesn't exist:
+```bash
+mkdir -p src/types
+```
+
+2. Run:
 ```bash
 supabase gen types typescript --project-id your-project-id --schema public > src/types/supabase.ts
 ```
@@ -71,12 +78,7 @@ Alternatively, you can use the Supabase browser UI:
 
 After generating your types, you need to update the Supabase client to use these types:
 
-1. Create a directory for types if it doesn't exist:
-```bash
-mkdir -p src/types
-```
-
-2. After generating your types in `src/types/supabase.ts`, update the Supabase client in `src/lib/supabase.ts`:
+1. After generating your types in `src/types/supabase.ts`, update the Supabase client in `src/lib/supabase.ts`:
 
 This ensures you get full type safety when interacting with your Supabase database.
 
