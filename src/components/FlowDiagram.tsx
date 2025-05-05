@@ -97,7 +97,7 @@ const initialEdges: Edge[] = [
     source: '2',
     target: '3',
     animated: true,
-    style: { stroke: '#000000', strokeWidth: 2 },
+    style: { stroke: '#FFFFFF', strokeWidth: 2 },
   },
   {
     id: 'e3-4',
@@ -145,39 +145,39 @@ export default function FlowDiagram() {
   }, [nodeName, nodes.length, setNodes]);
 
   return (
-    <div style={{ width: '100%', height: '600px' }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        connectionMode={ConnectionMode.Loose}
-        fitView
-      >
-        <Controls />
-        <MiniMap />
-        <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
-        
-        <Panel position="top-right" className="bg-white p-4 rounded-md shadow-md">
-          <h3 className="text-lg font-bold mb-2">Add Node</h3>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={nodeName}
-              onChange={(e) => setNodeName(e.target.value)}
-              placeholder="Node name"
-              className="px-2 py-1 border rounded"
-            />
-            <button
-              onClick={addNode}
-              className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-            >
-              Add
-            </button>
-          </div>
-        </Panel>
-      </ReactFlow>
+    <div style={{ width: '100%', height: '800px' }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          connectionMode={ConnectionMode.Loose}
+          fitView
+        >
+          <Controls />
+          <MiniMap />
+          <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+
+          <Panel position="top-right" className="bg-white p-4 rounded-md shadow-md">
+            <h3 className="text-lg font-bold mb-2">Add Node</h3>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={nodeName}
+                onChange={(e) => setNodeName(e.target.value)}
+                placeholder="Node name"
+                className="px-2 py-1 border rounded"
+              />
+              <button
+                onClick={addNode}
+                className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+              >
+                Add
+              </button>
+            </div>
+          </Panel>
+        </ReactFlow>
     </div>
   );
 }
