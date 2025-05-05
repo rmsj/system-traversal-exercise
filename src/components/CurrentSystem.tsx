@@ -12,18 +12,17 @@ import {useEffect, useState} from "react";
 
 export default function CurrentSystem(currentID: number) {
 
-    const [formData, setFormData] = useState<Omit<SystemInsert, 'id'>>({
+    const [formData, setFormData] = useState<{name: string; category: string}>({
         name: '',
         category: '',
-        parent_id: null,
     })
 
-    const [systemID, setSystemID] = useState(currentID)
+    const [systemID, setSystemID] = useState<number>(currentID)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
         setFormData(prev => ({ ...prev, [name]: value }))
     }
@@ -35,7 +34,7 @@ export default function CurrentSystem(currentID: number) {
         setSuccess(false)
 
         try {
-            if (systemID !== 0 && systemID !== null && systemID !== undefined) {
+            if (!isNaN(systemID)) {
                 await update(systemID, {
                         name: formData.name,
                         category: formData.category,
@@ -45,12 +44,14 @@ export default function CurrentSystem(currentID: number) {
             }
 
             setSuccess(true)
+            setTimeout(function() { setSuccess(false); }, 2000);
         } catch (err: unknown) {
             if (err instanceof Error) {
                 setError(err.message)
             } else {
                 setError('An unknown error occurred')
             }
+            setTimeout(function() { setError(null); }, 5000);
         } finally {
             setLoading(false)
         }
@@ -73,7 +74,8 @@ export default function CurrentSystem(currentID: number) {
     }
 
     useEffect(() => {
-        if (systemID !== 0 && systemID !== null && systemID !== undefined) {
+        if (!isNaN(systemID)) {
+            console.log("system id", systemID);
             getById(systemID).then(value => {
                 const system = value as SystemRow;
                 setSystemID(system.id);
@@ -95,44 +97,38 @@ export default function CurrentSystem(currentID: number) {
                 className="max-w-lg mx-auto pt-1 pb-3"
                 onSubmit={handleSubmit}
             >
+                {success && <div
+                    className="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50"
+                    role="alert">
+                    <span className="font-medium">Success!</span> System Saved.
+                </div>
+                }
+                {error && <div
+                    className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50"
+                    role="alert">
+                    <span className="font-medium">Danger!</span> { error }
+                </div>}
                 <div className="grid gap-6 mb-1 md:grid-cols-2">
-                    {success && <div
-                        className="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50"
-                        role="alert">
-                            <span className="font-medium">Success!</span> System Saved.
-                    </div>
-                    }
-                    {error && <div
-                        className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50"
-                        role="alert">
-                        <span className="font-medium">Danger!</span> { error }
-                    </div>}
 
                     <div className="mb-2">
                         <label htmlFor="system-name" className="block mb-2 text-sm font-medium text-gray-900">System
                             Name</label>
                         <input type="text" id="system-name"
+                               name={"name"}
                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                                value={formData.name}
                                onChange={handleChange}
                                required/>
                     </div>
                     <div className="mb-5 space-y-2">
-                        <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900">System
+                        <label htmlFor="system-category" className="block mb-2 text-sm font-medium text-gray-900">System
                             Category</label>
-                        <select id="countries"
-                                onChange={handleChange}
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-
-                            <option selected={formData.category === 'Application'}>Application</option>
-                            <option selected={formData.category === 'Service'}>Service</option>
-                            <option selected={formData.category === 'Microservice'}>Microservice</option>
-                            <option selected={formData.category === 'Database'}>Database</option>
-                            <option selected={formData.category === 'API'}>API</option>
-                            <option selected={formData.category === 'Storage'}>Storage</option>
-                            <option selected={formData.category === 'Frontend'}>Frontend</option>
-                            <option selected={formData.category === 'Backend'}>Backend</option>
-                        </select>
+                        <input type="text" id="system-category"
+                               name={"category"}
+                               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                               value={formData.category}
+                               onChange={handleChange}
+                               required/>
                     </div>
                 </div>
                 <button type="submit"
