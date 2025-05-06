@@ -6,6 +6,21 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+export type InterfacesData = {
+    source_system_id: number;
+    target_system_id: number;
+    connection_type: string;
+    directional: number;
+    source: {
+        id: number;
+        name: string;
+    };
+    target: {
+        id: number;
+        name: string;
+    };
+}
+
 export type Database = {
   public: {
     Tables: {

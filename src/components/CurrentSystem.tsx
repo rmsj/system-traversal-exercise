@@ -7,11 +7,11 @@ import ChildSystemsTable from "@/components/ChildSystemTable";
 import SystemFormModal from '@/components/SystemForm'
 
 interface Props {
-    currentSystemID: number;
+    currentSystemId: number;
     onSystemChange: (newID: number) => void
 }
 
-export default function CurrentSystem({currentSystemID, onSystemChange}: Props) {
+export default function CurrentSystem({currentSystemId, onSystemChange}: Props) {
 
     const [system, setSystem] = useState<SystemRow | null>(null)
     const [parentSystem, setParentSystem] = useState<SystemRow | null>(null)
@@ -20,25 +20,25 @@ export default function CurrentSystem({currentSystemID, onSystemChange}: Props) 
     const [isNewOpen, setIsNewOpen] = useState(false)
 
     useEffect(() => {
-        if (!isNaN(currentSystemID)) {
-            getSystemById(currentSystemID).then(sys => {
+        if (!isNaN(currentSystemId)) {
+            getSystemById(currentSystemId).then(sys => {
                 setSystem(sys)
                 if (sys?.parent_id) {
                     getSystemById(sys.parent_id).then(setParentSystem)
                 }
             }).finally(() => setLoading(false))
         }
-    }, [system, currentSystemID])
+    }, [system, currentSystemId])
 
     const refreshSystem = async (newID: number) => {
-        const idToUse = newID ?? currentSystemID
+        const idToUse = newID ?? currentSystemId
         const updated = await getSystemById(idToUse)
         setSystem(updated)
         if (updated?.parent_id) {
             const parent = await getSystemById(updated.parent_id)
             setParentSystem(parent)
         }
-        if (idToUse !== currentSystemID) {
+        if (idToUse !== currentSystemId) {
             onSystemChange(idToUse)
         }
     }

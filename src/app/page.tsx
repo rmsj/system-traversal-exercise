@@ -16,7 +16,7 @@ const FlowDiagram = dynamic(
 
 export default function Home() {
 
-    const [currentSystemID, setCurrentSystemID] = useState<number>(0)
+    const [currentSystemId, setCurrentSystemId] = useState<number>(0)
 
   return (
     <div className="container mx-auto p-4">
@@ -27,8 +27,8 @@ export default function Home() {
           </div>
           <div style={{ width: '39%', height: '50%', float: 'right', backgroundColor: '#f5f5f5' }}>
               <CurrentSystem
-                  currentSystemID={currentSystemID}
-                  onSystemChange={(newID) => setCurrentSystemID(newID)}
+                  currentSystemId={currentSystemId}
+                  onSystemChange={(newId: number) => setCurrentSystemId(newId)}
               />
           </div>
       </div>
