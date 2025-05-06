@@ -1,141 +1,111 @@
-import type {Database} from "@/types/supabase";
 import {
-    getSystemById, getSystemsByParentID,
-    insertSystem,
-    SystemInsert,
+    getSystemById,
     SystemRow,
-    SystemUpdate,
-    updateSystem
 } from "@/lib/supabase";
 import {useEffect, useState} from "react";
+import ChildSystemsTable from "@/components/ChildSystemTable";
+import SystemFormModal from '@/components/SystemForm'
 
+interface Props {
+    currentSystemID: number;
+    onSystemChange: (newID: number) => void
+}
 
-export default function CurrentSystem(currentID: number) {
+export default function CurrentSystem({currentSystemID, onSystemChange}: Props) {
 
-    const [formData, setFormData] = useState<{name: string; category: string}>({
-        name: '',
-        category: '',
-    })
-
-    const [systemID, setSystemID] = useState<number>(currentID)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
-    const [success, setSuccess] = useState(false)
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target
-        setFormData(prev => ({ ...prev, [name]: value }))
-    }
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setLoading(true)
-        setError(null)
-        setSuccess(false)
-
-        try {
-            if (!isNaN(systemID)) {
-                await update(systemID, {
-                        name: formData.name,
-                        category: formData.category,
-                    })
-            } else {
-                await add(formData as SystemInsert)
-            }
-
-            setSuccess(true)
-            setTimeout(function() { setSuccess(false); }, 2000);
-        } catch (err: unknown) {
-            if (err instanceof Error) {
-                setError(err.message)
-            } else {
-                setError('An unknown error occurred')
-            }
-            setTimeout(function() { setError(null); }, 5000);
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const add = async (data: SystemInsert) => {
-        return insertSystem(data);
-    };
-
-    const update = async (id: number, updates: SystemUpdate) => {
-        return updateSystem(id, updates)
-    };
-
-    const getById = async (id: number): Promise<SystemRow | null> => {
-        return getSystemById(id)
-    }
-
-    const getChildren = async(id: number): Promise<SystemRow[]> => {
-        return getSystemsByParentID(id)
-    }
+    const [system, setSystem] = useState<SystemRow | null>(null)
+    const [parentSystem, setParentSystem] = useState<SystemRow | null>(null)
+    const [loading, setLoading] = useState(true)
+    const [isEditOpen, setIsEditOpen] = useState(false)
+    const [isNewOpen, setIsNewOpen] = useState(false)
 
     useEffect(() => {
-        if (!isNaN(systemID)) {
-            console.log("system id", systemID);
-            getById(systemID).then(value => {
-                const system = value as SystemRow;
-                setSystemID(system.id);
-                setFormData(system);
-                console.log(value);
-            });
-
-            // Get children for the current selected system
-            getChildren(systemID).then(value => {
-                console.log(value);
-            });
+        if (!isNaN(currentSystemID)) {
+            getSystemById(currentSystemID).then(sys => {
+                setSystem(sys)
+                if (sys?.parent_id) {
+                    getSystemById(sys.parent_id).then(setParentSystem)
+                }
+            }).finally(() => setLoading(false))
         }
-    }, [systemID]);
+    }, [system, currentSystemID])
+
+    const refreshSystem = async (newID: number) => {
+        const idToUse = newID ?? currentSystemID
+        const updated = await getSystemById(idToUse)
+        setSystem(updated)
+        if (updated?.parent_id) {
+            const parent = await getSystemById(updated.parent_id)
+            setParentSystem(parent)
+        }
+        if (idToUse !== currentSystemID) {
+            onSystemChange(idToUse)
+        }
+    }
+
+    if (loading) return <div className="p-4">Loading...</div>
 
     return (
-        <div>
-            <h1 className="pl-7 text-2xl font-bold mb-4 text-gray-900 pb-0">Current System</h1>
-            <form
-                className="max-w-lg mx-auto pt-1 pb-3"
-                onSubmit={handleSubmit}
-            >
-                {success && <div
-                    className="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50"
-                    role="alert">
-                    <span className="font-medium">Success!</span> System Saved.
-                </div>
-                }
-                {error && <div
-                    className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50"
-                    role="alert">
-                    <span className="font-medium">Danger!</span> { error }
-                </div>}
-                <div className="grid gap-6 mb-1 md:grid-cols-2">
+        <div className="p-6">
+            <div className="bg-white shadow rounded-lg p-6 mb-6">
+                <div className="flex justify-between items-center mb-4">
+                    <h1 className="text-xl font-semibold text-gray-900">Current System Details</h1>
 
-                    <div className="mb-2">
-                        <label htmlFor="system-name" className="block mb-2 text-sm font-medium text-gray-900">System
-                            Name</label>
-                        <input type="text" id="system-name"
-                               name={"name"}
-                               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                               value={formData.name}
-                               onChange={handleChange}
-                               required/>
-                    </div>
-                    <div className="mb-5 space-y-2">
-                        <label htmlFor="system-category" className="block mb-2 text-sm font-medium text-gray-900">System
-                            Category</label>
-                        <input type="text" id="system-category"
-                               name={"category"}
-                               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                               value={formData.category}
-                               onChange={handleChange}
-                               required/>
-                    </div>
+                    {!system && <div className="p-4 text-red-600">No System selected</div>}
+
+                    {system && <button
+                        onClick={() => setIsEditOpen(true)}
+                        className="px-4 py-2 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                        Edit
+                    </button>}
+                    <button
+                        onClick={() => { setIsNewOpen(true); }}
+                        className="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700"
+                    >
+                        + Add
+                    </button>
                 </div>
-                <button type="submit"
-                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-xs w-full sm:w-auto px-5 py-2.5 text-center">
-                    {loading ? 'Saving...' : 'Save System'}
-                </button>
-            </form>
+
+                {system && <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <div className="text-sm text-gray-600">System ID: <span className="text-base font-medium text-gray-900">{system.id}</span></div>
+
+                    </div>
+                    <div>
+                        <div className="text-sm text-gray-600">Name: <span className="text-base font-medium text-gray-900">{system.name}</span></div>
+
+                    </div>
+                    <div>
+                        <div className="text-sm text-gray-600">Category: <span className="text-base font-medium text-gray-900">{system.category}</span></div>
+
+                    </div>
+                    {system.parent_id && parentSystem && (
+                        <div>
+                            <div className="text-sm text-gray-500">Parent System: <span className="text-base text-gray-700">{parentSystem.name}</span></div>
+                        </div>
+                    )}
+                </div>}
+            </div>
+
+            {system && <div className="bg-white shadow rounded-lg p-6 mb-6">
+                <ChildSystemsTable parentSystem={system} />
+            </div>}
+
+            <SystemFormModal
+                isOpen={isEditOpen || isNewOpen}
+                onClose={() => {
+                    setIsEditOpen(false)
+                    setIsNewOpen(false)
+                }}
+                onSuccess={(newID: number) => {
+                    setIsEditOpen(false)
+                    setIsNewOpen(false)
+                    refreshSystem(newID)
+                }}
+                editingSystem={isNewOpen ? null : system}
+                parentSystem={isNewOpen ? null : parentSystem}
+            />
         </div>
-)
+    )
 }

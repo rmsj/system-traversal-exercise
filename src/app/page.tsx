@@ -6,6 +6,7 @@
  */
 import dynamic from "next/dynamic";
 import CurrentSystem from "@/components/CurrentSystem";
+import {useState} from "react";
 
 // Use dynamic import for the FlowDiagram component
 const FlowDiagram = dynamic(
@@ -14,6 +15,9 @@ const FlowDiagram = dynamic(
 );
 
 export default function Home() {
+
+    const [currentSystemID, setCurrentSystemID] = useState<number>(0)
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Next.js + Supabase + React Flow</h1>
@@ -22,7 +26,10 @@ export default function Home() {
               <FlowDiagram />
           </div>
           <div style={{ width: '39%', height: '50%', float: 'right', backgroundColor: '#f5f5f5' }}>
-              <CurrentSystem />
+              <CurrentSystem
+                  currentSystemID={currentSystemID}
+                  onSystemChange={(newID) => setCurrentSystemID(newID)}
+              />
           </div>
       </div>
     </div>
