@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { SystemRow, deleteSystem, getSystemsByParentID } from '@/lib/supabase'
+import { SystemRow, deleteSystem, getDescendents } from '@/lib/supabase'
 import SystemModal from './SystemForm'
 
 interface Props {
@@ -14,7 +14,7 @@ export default function ChildSystemsTable({ parentSystem }: Props) {
     const [editingSystem, setEditingSystem] = useState<SystemRow | null>(null)
 
     const loadChildren = async () => {
-        const result = await getSystemsByParentID(parentSystem.id)
+        const result = await getDescendents(parentSystem.id)
         setChildren(result)
     }
 

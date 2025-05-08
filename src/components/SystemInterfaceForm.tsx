@@ -8,7 +8,7 @@ import {
     SystemInterfaceInsert,
     insertSystemInterface,
     updateSystemInterface,
-    getCurrentAndAllChildrenSystems, getAllSystems
+    getCurrentSystemAndDescendents, getAllSystems
 } from '@/lib/supabase'
 
 interface Props {
@@ -40,7 +40,7 @@ export default function SystemInterfaceModal({currentSystemId, isOpen, onClose, 
 
     useEffect(() => {
         if (isOpen) {
-            getCurrentAndAllChildrenSystems(currentSystemId).then(value => {
+            getCurrentSystemAndDescendents(currentSystemId).then(value => {
                 setSourceSystems(value)
             })
             getAllSystems().then(value => {

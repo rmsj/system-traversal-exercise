@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import {
-    getSystemsByParentID,
-    getAllInterfacesForSystemAndChildren,
+    getDescendents,
+    getAllInterfacesForSystemAndDescendants,
     deleteSystemInterface,
     SystemInterfaceRow
 } from '@/lib/supabase'
@@ -22,11 +22,11 @@ export default function SystemInterfacesTable({ currentSystemId }: Props) {
 
 
     const loadChildren = async () => {
-        const result = await getAllInterfacesForSystemAndChildren(currentSystemId)
+        const result = await getAllInterfacesForSystemAndDescendants(currentSystemId)
         if (result){
             setSystemInterfaces(result)
             const ids: number[] = [currentSystemId]
-            const children = await getSystemsByParentID(currentSystemId)
+            const children = await getDescendents(currentSystemId)
             ids.push(...children.map(c => c.id))
             setSystemIds(ids)
         }

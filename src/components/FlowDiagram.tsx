@@ -18,8 +18,8 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import {
-  getAllInterfacesForSystemAndChildren, getCurrentAndAllChildrenSystems, getSystemsByParentID,
-  getTopLevelInterfaces, getTopLevelSystemsAndChildren,
+  getAllInterfacesForSystemAndDescendants, getCurrentSystemAndDescendents, getDescendents,
+  getTopLevelInterfacesAndDescendants, getTopLevelSystemsAndChildren,
   SystemRow
 } from '@/lib/supabase';
 import {InterfacesData} from "@/types/supabase";
@@ -139,11 +139,11 @@ export default function FlowDiagram({ currentSystemId, onSystemChange }: Props) 
       let systems: SystemRow[] | null = [];
 
       if (currentSystemId) {
-        systems = await getCurrentAndAllChildrenSystems(currentSystemId);
-        interfaces = await getAllInterfacesForSystemAndChildren(currentSystemId);
+        systems = await getCurrentSystemAndDescendents(currentSystemId);
+        interfaces = await getAllInterfacesForSystemAndDescendants(currentSystemId);
       } else {
         systems = await getTopLevelSystemsAndChildren();
-        interfaces = await getTopLevelInterfaces();
+        interfaces = await getTopLevelInterfacesAndDescendants();
       }
 
       if (interfaces) {
