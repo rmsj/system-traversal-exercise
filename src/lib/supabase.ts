@@ -127,11 +127,11 @@ export async function getAllSystems(): Promise<SystemRow[]> {
 }
 
 // return all top layer systems for the initial state of the diagram
-export async function getAllTopLayerSystems(): Promise<SystemRow[]> {
+export async function getTopLevelSystems(): Promise<SystemRow[]> {
     const { data, error } = await supabase
         .from('systems')
         .select('*')
-        .not('parent_id', 'is', null)
+        .is('parent_id', null)
 
     if (error) {
         console.error('Fetch all top layer systems failed:', error.message)
@@ -188,7 +188,7 @@ export async function deleteSystemInterface(sourceId : number, targetId : number
     return true
 }
 
-export async function getAllInterfaces(systemId : number):Promise<InterfacesData[] | null> {
+export async function getAllInterfacesForSystemAndChildren(systemId : number):Promise<InterfacesData[] | null> {
 
     const ids = [systemId]
     const children = await getSystemsByParentID(systemId)
@@ -207,8 +207,8 @@ export async function getAllInterfaces(systemId : number):Promise<InterfacesData
     target_system_id,
     connection_type,
     directional,
-    source:source_system_id ( id, name ),
-    target:target_system_id ( id, name )
+    source:source_system_id ( id, name, category, parent_id ),
+    target:target_system_id ( id, name, category, parent_id )
   `)
         .or(orConditions)
 
@@ -220,3 +220,73 @@ export async function getAllInterfaces(systemId : number):Promise<InterfacesData
     return data as unknown as InterfacesData[]
 }
 
+export async function getAllInterfacesForSystem(systemId : number):Promise<InterfacesData[] | null> {
+
+    const ids = [systemId]
+
+    // Build OR query string
+    const orConditions = [
+        ...ids.map(id => `source_system_id.eq.${id}`),
+        ...ids.map(id => `target_system_id.eq.${id}`)
+    ].join(',')
+
+    const { data, error } = await supabase
+        .from('system_interfaces')
+        .select(`
+    source_system_id,
+    target_system_id,
+    connection_type,
+    directional,
+    source:source_system_id ( id, name, category, parent_id ),
+    target:target_system_id ( id, name, category, parent_id )
+  `)
+        .or(orConditions)
+
+    if (error) {
+        console.error('Error fetching interfaces:', error)
+        return null
+    }
+
+    return data as unknown as InterfacesData[]
+}
+
+export async function getTopLevelInterfaces(): Promise<InterfacesData[]> {
+    // First get all top-level systems
+    const { data: systems, error: systemError } = await supabase
+        .from('systems')
+        .select('id')
+        .is('parent_id', null)
+
+    if (systemError || !systems) {
+        console.error('Failed to fetch top-level systems:', systemError)
+        return []
+    }
+
+    const ids = systems.map(s => s.id)
+
+    // Build OR condition for interfaces between top-level systems
+    const orConditions = [
+        ...ids.map(id => `source_system_id.eq.${id}`),
+        ...ids.map(id => `target_system_id.eq.${id}`)
+    ].join(',')
+
+    const { data, error } = await supabase
+        .from('system_interfaces')
+        .select(`
+      source_system_id,
+      target_system_id,
+      connection_type,
+      directional,
+      source:source_system_id ( id, name, category, parent_id ),
+      target:target_system_id ( id, name, category, parent_id )
+    `)
+        .or(orConditions)
+
+    if (error) {
+        console.error('Error fetching top-level interfaces:', error)
+        return []
+    }
+
+    // Filter to only those where both ends are top-level
+    return data as unknown as InterfacesData[]
+}

@@ -16,14 +16,17 @@ const FlowDiagram = dynamic(
 
 export default function Home() {
 
-    const [currentSystemId, setCurrentSystemId] = useState<number>(5)
+    const [currentSystemId, setCurrentSystemId] = useState<number | null>(null)
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Next.js + Supabase + React Flow</h1>
       <div className="border rounded-lg overflow-hidden">
           <div style={{ width: '60%', float: 'left' }}>
-              <FlowDiagram />
+              <FlowDiagram
+                  currentSystemId={currentSystemId}
+                  onSystemChange={(newId: number) => setCurrentSystemId(newId)}
+              />
           </div>
           <div style={{ width: '40%', height: '800px', float: 'right', backgroundColor: '#f5f5f5' }}>
               <CurrentSystem

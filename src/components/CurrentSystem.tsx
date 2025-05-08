@@ -8,7 +8,7 @@ import SystemFormModal from '@/components/SystemForm'
 import SystemInterfacesTable from "@/components/SystemInterfacesTable";
 
 interface Props {
-    currentSystemId: number;
+    currentSystemId: number | null;
     onSystemChange: (newID: number) => void
 }
 
@@ -21,7 +21,7 @@ export default function CurrentSystem({currentSystemId, onSystemChange}: Props) 
     const [isNewOpen, setIsNewOpen] = useState(false)
 
     useEffect(() => {
-        if (!isNaN(currentSystemId)) {
+        if (currentSystemId) {
             getSystemById(currentSystemId).then(sys => {
                 setSystem(sys)
                 if (sys?.parent_id) {

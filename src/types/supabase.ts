@@ -14,10 +14,14 @@ export type InterfacesData = {
     source: {
         id: number;
         name: string;
+        category: string;
+        parent_id: number | null;
     };
     target: {
         id: number;
         name: string;
+        category: string;
+        parent_id: number | null;
     };
 }
 

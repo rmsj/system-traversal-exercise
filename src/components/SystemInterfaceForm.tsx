@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import {
-    SystemInsert,
     SystemRow,
-    SystemUpdate,
-    insertSystem,
-    updateSystem,
     SystemInterfaceRow,
     SystemInterfaceUpdate,
     SystemInterfaceInsert,
@@ -14,7 +10,6 @@ import {
     updateSystemInterface,
     getCurrentAndAllChildrenSystems, getAllSystems
 } from '@/lib/supabase'
-import {InterfacesData} from "@/types/supabase";
 
 interface Props {
     currentSystemId: number;
@@ -46,12 +41,9 @@ export default function SystemInterfaceModal({currentSystemId, isOpen, onClose, 
     useEffect(() => {
         if (isOpen) {
             getCurrentAndAllChildrenSystems(currentSystemId).then(value => {
-                console.log(value);
-                console.log(currentSystemId);
                 setSourceSystems(value)
             })
             getAllSystems().then(value => {
-                console.log("formData", formData);
                 setTargetSystems(value)
             })
         }
