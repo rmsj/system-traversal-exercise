@@ -160,18 +160,17 @@ export default function FlowDiagram({ currentSystemId, onSystemChange }: Props) 
     };
 
     load();
-  }, [currentSystemId, layoutDirection]);
+  }, [currentSystemId]);
 
   const onConnect = useCallback(
       (params: Connection) => setEdges((eds) => addEdge(params, eds)),
+      // TODO: create a system interface when this happens?
       [setEdges]
   );
 
-  const onNodeDoubleClick = useCallback((event: ReactMouseEvent, node: Node) => {
+  const onNodeDoubleClick = useCallback((_: ReactMouseEvent, node: Node) => {
     onSystemChange(+node.id)
-    console.log(event);
-    console.log(node);
-  }, []);
+  }, [onSystemChange]);
 
   const onLayout = (direction: 'TB' | 'LR') => {
     setLayoutDirection(direction);

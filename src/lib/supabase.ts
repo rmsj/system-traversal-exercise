@@ -65,6 +65,11 @@ export async function getCurrentSystemAndDescendents(systemId: number): Promise<
     const ids = []
     ids.push(...data.filter(d => d.parent_id).map(d => d.id))
 
+    // there is nothing more to search
+    if (ids.length == 0) {
+        return data
+    }
+
     // build OR query string for grandchildren
     const orConditions = [
         ...ids.map(id => `parent_id.eq.${id}`)
@@ -104,6 +109,11 @@ export async function getTopLevelSystemsAndChildren(): Promise<SystemRow[]> {
     const ids = []
     const topLevelSystems= await getTopLevelSystems()
     ids.push(...topLevelSystems.map(tl => tl.id))
+
+    // there is nothing more to search
+    if (ids.length == 0) {
+        return topLevelSystems
+    }
 
     // build OR query string for children
     const orConditions = [
@@ -165,6 +175,10 @@ export async function getTopLevelInterfacesAndDescendants(): Promise<InterfacesD
     const ids = []
     const topLevelAndChildren= await getTopLevelSystemsAndChildren()
     ids.push(...topLevelAndChildren.map(tl => tl.id))
+
+    if (ids.length == 0) {
+        return []
+    }
 
     // build OR condition for interfaces between top-level systems and their descendants
     const orConditions = [
