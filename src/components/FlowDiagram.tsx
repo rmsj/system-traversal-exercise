@@ -18,8 +18,8 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import {
-  getAllInterfacesForSystemAndChildren,
-  getTopLevelInterfaces, getTopLevelSystems, getTopLevelSystemsAndChildren,
+  getAllInterfacesForSystemAndChildren, getCurrentAndAllChildrenSystems, getSystemsByParentID,
+  getTopLevelInterfaces, getTopLevelSystemsAndChildren,
   SystemRow
 } from '@/lib/supabase';
 import {InterfacesData} from "@/types/supabase";
@@ -27,7 +27,7 @@ import dagre from '@dagrejs/dagre';
 
 interface Props {
   currentSystemId: number | null;
-  onSystemChange: (newID: number) => void;
+  onSystemChange: (newID: number | null) => void;
 }
 
 const colors = [
@@ -115,7 +115,7 @@ export default function FlowDiagram({ currentSystemId, onSystemChange }: Props) 
       id: `e-${sys.id}-${sys.parent_id}-${idx}`,
       source: sys.parent_id!.toString(),
       target: sys.id.toString(),
-      animated: true,
+      animated: false,
       label: 'child',
       style: {
         stroke: generateColor(idx + 5),
@@ -123,12 +123,9 @@ export default function FlowDiagram({ currentSystemId, onSystemChange }: Props) 
       },
     }));
 
-    console.log("Nodes: ", flowNodes);
-    console.log("Child edges: ", childEdges);
     if (childEdges.length > 0) {
       flowEdges.push(...childEdges);
     }
-    console.log("Edges edges: ", flowEdges);
 
     const layoutedNodes = layoutElements(flowNodes, flowEdges);
 
@@ -142,6 +139,7 @@ export default function FlowDiagram({ currentSystemId, onSystemChange }: Props) 
       let systems: SystemRow[] | null = [];
 
       if (currentSystemId) {
+        systems = await getCurrentAndAllChildrenSystems(currentSystemId);
         interfaces = await getAllInterfacesForSystemAndChildren(currentSystemId);
       } else {
         systems = await getTopLevelSystemsAndChildren();
@@ -154,12 +152,8 @@ export default function FlowDiagram({ currentSystemId, onSystemChange }: Props) 
           if (!systems.find(s => s.id === i.target.id)) systems.push(i.target);
         });
       }
-      console.log("Systems: ", systems);
-      console.log("Interfaces: ", interfaces);
 
       const { flowNodes, flowEdges } = transformToFlow(systems, interfaces || []);
-
-      console.log("Nodes: ", flowNodes);
 
       setNodes(flowNodes);
       setEdges(flowEdges);
@@ -214,6 +208,13 @@ export default function FlowDiagram({ currentSystemId, onSystemChange }: Props) 
                 onClick={() => onLayout('LR')}
             >
               Horizontal
+            </button>
+            <button
+                type="button"
+                className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-xs px-3 py-1.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                onClick={() => onSystemChange(null)}
+            >
+              {String.fromCharCode(8592)} Top Level
             </button>
           </Panel>
         </ReactFlow>

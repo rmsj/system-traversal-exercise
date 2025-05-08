@@ -9,7 +9,7 @@ import SystemInterfacesTable from "@/components/SystemInterfacesTable";
 
 interface Props {
     currentSystemId: number | null;
-    onSystemChange: (newID: number) => void
+    onSystemChange: (newID: number | null) => void
 }
 
 export default function CurrentSystem({currentSystemId, onSystemChange}: Props) {

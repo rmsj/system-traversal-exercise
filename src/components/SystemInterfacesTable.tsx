@@ -67,7 +67,7 @@ export default function SystemInterfacesTable({ currentSystemId }: Props) {
                 <tbody>
                 {systemInterfaces.length === 0 && (
                     <tr>
-                        <td colSpan={4} className="text-center p-4 text-gray-700">No child systems found.</td>
+                        <td colSpan={4} className="text-center p-4 text-gray-700">No system interfaces found.</td>
                     </tr>
                 )}
                 {systemInterfaces.map((iface) => {

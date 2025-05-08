@@ -25,13 +25,13 @@ export default function Home() {
           <div style={{ width: '60%', float: 'left' }}>
               <FlowDiagram
                   currentSystemId={currentSystemId}
-                  onSystemChange={(newId: number) => setCurrentSystemId(newId)}
+                  onSystemChange={(newId: number | null) => setCurrentSystemId(newId)}
               />
           </div>
           <div style={{ width: '40%', height: '800px', float: 'right', backgroundColor: '#f5f5f5' }}>
               <CurrentSystem
                   currentSystemId={currentSystemId}
-                  onSystemChange={(newId: number) => setCurrentSystemId(newId)}
+                  onSystemChange={(newId: number | null) => setCurrentSystemId(newId)}
               />
           </div>
       </div>
