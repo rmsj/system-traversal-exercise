@@ -141,6 +141,33 @@ export async function getTopLevelSystems(): Promise<SystemRow[]> {
     return data
 }
 
+// return all top layer systems for the initial state of the diagram
+export async function getTopLevelSystemsAndChildren(): Promise<SystemRow[]> {
+    const ids = []
+    const topLevelSystems= await getTopLevelSystems()
+    ids.push(...topLevelSystems.map(tl => tl.id))
+
+    // Build OR query string
+    const orConditions = [
+        ...ids.map(id => `parent_id.eq.${id}`)
+    ].join(',')
+
+    const { data: children, error } = await supabase
+        .from('systems')
+        .select('*')
+        .or(orConditions)
+        .order('id', {
+            ascending: false,
+        })
+
+    if (error) {
+        console.error('Fetch all top layer systems with children failed:', error.message)
+        return []
+    }
+
+    return [...topLevelSystems, ...children]
+}
+
 export async function insertSystemInterface(data: SystemInterfaceInsert):Promise<SystemInterfaceRow> {
     const { data: result, error } = await supabase
         .from('system_interfaces')

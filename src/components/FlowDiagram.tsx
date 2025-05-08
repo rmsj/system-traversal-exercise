@@ -19,7 +19,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import {
   getAllInterfacesForSystemAndChildren,
-  getTopLevelInterfaces, getTopLevelSystems,
+  getTopLevelInterfaces, getTopLevelSystems, getTopLevelSystemsAndChildren,
   SystemRow
 } from '@/lib/supabase';
 import {InterfacesData} from "@/types/supabase";
@@ -38,7 +38,7 @@ const initialNodes: Node[] = [];
 
 const initialEdges: Edge[] = [];
 
-export default function FlowDiagram({ currentSystemId }: Props) {
+export default function FlowDiagram({ currentSystemId, onSystemChange }: Props) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [layoutDirection, setLayoutDirection] = useState<'TB' | 'LR'>('TB');
@@ -84,10 +84,20 @@ export default function FlowDiagram({ currentSystemId }: Props) {
           padding: '10px',
           width: 180,
         },
-        parentNode: sys.parent_id ? sys.parent_id.toString() : undefined,
-        extent: sys.parent_id ? 'parent' : undefined,
+        // parentId: sys.parent_id ? sys.parent_id.toString() : undefined,
+        // extent: sys.parent_id ? 'parent' : undefined,
       };
     });
+
+    // for (let i = 0; i < flowNodes.length; i++) {
+    //   for (let j = i + 1; j < flowNodes.length; j++) {
+    //     if (flowNodes[i].id === flowNodes[j].parentId) {
+    //       flowNodes[i].type = 'group';
+    //       flowNodes[i].style!.width = 300;
+    //       flowNodes[i].style!.height = 300;
+    //     }
+    //   }
+    // }
 
     const flowEdges: Edge[] = interfaces.map((i, idx) => ({
       id: `e-${i.source_system_id}-${i.target_system_id}-${idx}`,
@@ -101,6 +111,25 @@ export default function FlowDiagram({ currentSystemId }: Props) {
       },
     }));
 
+    const childEdges: Edge[] = systems.filter(sys => sys.parent_id).map((sys, idx) => ({
+      id: `e-${sys.id}-${sys.parent_id}-${idx}`,
+      source: sys.parent_id!.toString(),
+      target: sys.id.toString(),
+      animated: true,
+      label: 'child',
+      style: {
+        stroke: generateColor(idx + 5),
+        strokeWidth: 1,
+      },
+    }));
+
+    console.log("Nodes: ", flowNodes);
+    console.log("Child edges: ", childEdges);
+    if (childEdges.length > 0) {
+      flowEdges.push(...childEdges);
+    }
+    console.log("Edges edges: ", flowEdges);
+
     const layoutedNodes = layoutElements(flowNodes, flowEdges);
 
     return { flowNodes: layoutedNodes, flowEdges };
@@ -108,8 +137,6 @@ export default function FlowDiagram({ currentSystemId }: Props) {
 
   useEffect(() => {
     const load = async () => {
-      console.log('loading');
-      console.log(currentSystemId);
 
       let interfaces: InterfacesData[] | null = [];
       let systems: SystemRow[] | null = [];
@@ -117,7 +144,7 @@ export default function FlowDiagram({ currentSystemId }: Props) {
       if (currentSystemId) {
         interfaces = await getAllInterfacesForSystemAndChildren(currentSystemId);
       } else {
-        systems = await getTopLevelSystems();
+        systems = await getTopLevelSystemsAndChildren();
         interfaces = await getTopLevelInterfaces();
       }
 
@@ -127,8 +154,12 @@ export default function FlowDiagram({ currentSystemId }: Props) {
           if (!systems.find(s => s.id === i.target.id)) systems.push(i.target);
         });
       }
+      console.log("Systems: ", systems);
+      console.log("Interfaces: ", interfaces);
 
       const { flowNodes, flowEdges } = transformToFlow(systems, interfaces || []);
+
+      console.log("Nodes: ", flowNodes);
 
       setNodes(flowNodes);
       setEdges(flowEdges);
@@ -143,6 +174,7 @@ export default function FlowDiagram({ currentSystemId }: Props) {
   );
 
   const onNodeDoubleClick = useCallback((event: ReactMouseEvent, node: Node) => {
+    onSystemChange(+node.id)
     console.log(event);
     console.log(node);
   }, []);
