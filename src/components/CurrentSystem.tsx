@@ -5,6 +5,7 @@ import {
 import {useEffect, useState} from "react";
 import ChildSystemsTable from "@/components/ChildSystemTable";
 import SystemFormModal from '@/components/SystemForm'
+import SystemInterfacesTable from "@/components/SystemInterfacesTable";
 
 interface Props {
     currentSystemId: number;
@@ -90,6 +91,10 @@ export default function CurrentSystem({currentSystemId, onSystemChange}: Props) 
 
             {system && <div className="bg-white shadow rounded-lg p-6 mb-6">
                 <ChildSystemsTable parentSystem={system} />
+            </div>}
+
+            {system && <div className="bg-white shadow rounded-lg p-6 mb-6">
+                <SystemInterfacesTable currentSystemId={system.id} />
             </div>}
 
             <SystemFormModal

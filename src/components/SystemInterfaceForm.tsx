@@ -8,37 +8,54 @@ import {
     insertSystem,
     updateSystem,
     SystemInterfaceRow,
-    SystemInterfaceUpdate, SystemInterfaceInsert, insertSystemInterface, updateSystemInterface
+    SystemInterfaceUpdate,
+    SystemInterfaceInsert,
+    insertSystemInterface,
+    updateSystemInterface,
+    getCurrentAndAllChildrenSystems, getAllSystems
 } from '@/lib/supabase'
 import {InterfacesData} from "@/types/supabase";
 
 interface Props {
+    currentSystemId: number;
     isOpen: boolean
     onClose: () => void
-    editingInterface?: InterfacesData | null
+    editingInterface: SystemInterfaceRow | null
     onSuccess: () => void
 }
 
-export default function SystemInterfaceModal({
-                                        isOpen,
-                                        onClose,
-                                        editingInterface = null,
-                                        onSuccess,
-                                    }: Props) {
-    const [formData, setFormData] = useState({ connection_type: '', directional: 1 })
+export default function SystemInterfaceModal({currentSystemId, isOpen, onClose, editingInterface = null, onSuccess}: Props) {
+
+    const [formData, setFormData] = useState({ connection_type: '', directional: 1, source_system_id: 0, target_system_id: 0 })
     const [error, setError] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
+    const [sourceSystems, setSourceSystems] = useState<SystemRow[]>([])
+    const [targetSystems, setTargetSystems] = useState<SystemRow[]>([])
 
     const isEditing = Boolean(editingInterface)
 
     useEffect(() => {
         if (isOpen && editingInterface) {
-            setFormData({ connection_type: editingInterface.connection_type, directional: editingInterface.directional })
+            setFormData({ connection_type: editingInterface.connection_type, directional: editingInterface.directional, source_system_id: editingInterface.source_system_id, target_system_id: editingInterface.target_system_id })
         } else {
-            setFormData({ connection_type: '', directional: 1 })
+            setFormData({ connection_type: '', directional: 1, source_system_id: 0, target_system_id: 0 })
         }
     }, [isOpen, editingInterface])
+
+    useEffect(() => {
+        if (isOpen) {
+            getCurrentAndAllChildrenSystems(currentSystemId).then(value => {
+                console.log(value);
+                console.log(currentSystemId);
+                setSourceSystems(value)
+            })
+            getAllSystems().then(value => {
+                console.log("formData", formData);
+                setTargetSystems(value)
+            })
+        }
+    }, [isOpen, currentSystemId, formData])
 
     const validate = () => {
         const { connection_type, directional } = formData
@@ -47,7 +64,7 @@ export default function SystemInterfaceModal({
         return null
     }
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target
         setFormData(prev => ({ ...prev, [name]: value }))
     }
@@ -77,8 +94,8 @@ export default function SystemInterfaceModal({
                 const insert = {
                     connection_type: formData.connection_type,
                     directional: formData.directional,
-                    source_system_id: editingInterface?.source_system_id ?? null,
-                    target_system_id: editingInterface?.target_system_id ?? null,
+                    source_system_id: formData?.source_system_id ?? null,
+                    target_system_id: formData?.target_system_id ?? null,
                 }
                 await insertSystemInterface(insert as SystemInterfaceInsert)
             }
@@ -118,40 +135,68 @@ export default function SystemInterfaceModal({
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">System Name</label>
-                        <input
-                            type="text"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            required
-                            className="mt-1 block w-full rounded-md border text-gray-900 text-sm border-gray-300 p-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
+                        <label className="block text-sm font-medium text-gray-700">Source System</label>
+                        <select className="mt-1 block w-full rounded-md text-gray-900 border border-gray-300 p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                                name="source_system_id"
+                                onChange={handleChange}
+                                value={formData.source_system_id ?? ''}
+                                required
+                        >
+                            <option value="">Select Source</option>
+                            {sourceSystems
+                                .filter(sys => sys.id != formData.target_system_id)
+                                .map(sys => (
+                                    <option key={sys.id} value={sys.id}>
+                                        {sys.name}
+                                    </option>
+                                ))}
+                        </select>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Category</label>
+                        <label className="block text-sm font-medium text-gray-700">System Name</label>
+                        <select className="mt-1 block w-full rounded-md text-gray-900 border border-gray-300 p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                                name="target_system_id"
+                                onChange={handleChange}
+                                value={formData.target_system_id ?? ''}
+                                required
+                        >
+                            <option value="">Select Target</option>
+                            {targetSystems
+                                .filter(sys => sys.id != formData.source_system_id)
+                                .map(sys => (
+                                    <option key={sys.id} value={sys.id}>
+                                        {sys.name}
+                                    </option>
+                                ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Connection Type</label>
                         <input
                             type="text"
-                            name="category"
-                            value={formData.category}
+                            name="connection_type"
+                            value={formData.connection_type}
                             onChange={handleChange}
                             required
                             className="mt-1 block w-full rounded-md text-gray-900 border border-gray-300 p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
                         />
                     </div>
 
-                    {parentSystem && (
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Parent System</label>
-                            <input
-                                type="text"
-                                readOnly
-                                value={parentSystem.name}
-                                className="mt-1 block w-full bg-gray-100 rounded-md border border-gray-300 p-2 text-sm text-gray-700"
-                            />
-                        </div>
-                    )}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Directional</label>
+                        <select className="mt-1 block w-full rounded-md text-gray-900 border border-gray-300 p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                            name="directional"
+                            value={formData.directional}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="1">Directed</option>
+                            <option value="2">Undirected</option>
+                        </select>
+
+                    </div>
 
                     <div className="flex justify-end gap-2 pt-4">
                         <button

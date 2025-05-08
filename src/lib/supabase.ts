@@ -97,12 +97,26 @@ export async function getSystemsByParentID(parentID: number): Promise<SystemRow[
 // return all top layer systems for the initial state of the diagram
 export async function getCurrentAndAllChildrenSystems(systemId: number): Promise<SystemRow[]> {
     const { data, error } = await supabase
-        .from('system')
+        .from('systems')
         .select('*')
         .or(`id.eq.${systemId},parent_id.eq.${systemId}`)
         .order('id', {
             ascending: false,
         })
+
+    if (error) {
+        console.error('Fetch all current and children systems failed:', error.message)
+        return []
+    }
+
+    return data
+}
+
+// return all systems
+export async function getAllSystems(): Promise<SystemRow[]> {
+    const { data, error } = await supabase
+        .from('systems')
+        .select('*')
 
     if (error) {
         console.error('Fetch all failed:', error.message)
@@ -120,7 +134,7 @@ export async function getAllTopLayerSystems(): Promise<SystemRow[]> {
         .not('parent_id', 'is', null)
 
     if (error) {
-        console.error('Fetch all failed:', error.message)
+        console.error('Fetch all top layer systems failed:', error.message)
         return []
     }
 
@@ -144,7 +158,7 @@ export async function insertSystemInterface(data: SystemInterfaceInsert):Promise
 
 export async function updateSystemInterface(sourceId : number, targetId : number, updates: SystemInterfaceUpdate): Promise<SystemInterfaceRow> {
     const { data, error } = await supabase
-        .from('systems')
+        .from('system_interfaces')
         .update(updates)
         .eq('source_system_id', sourceId)
         .eq('target_system_id', targetId)
@@ -161,7 +175,7 @@ export async function updateSystemInterface(sourceId : number, targetId : number
 
 export async function deleteSystemInterface(sourceId : number, targetId : number): Promise<boolean> {
     const { error } = await supabase
-        .from('systems')
+        .from('system_interfaces')
         .delete()
         .eq('source_system_id', sourceId)
         .eq('target_system_id', targetId)

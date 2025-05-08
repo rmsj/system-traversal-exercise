@@ -29,7 +29,7 @@ export default function ChildSystemsTable({ parentSystem }: Props) {
     }
 
     return (
-        <div className="mt-0">
+        <div className="mt-0 overflow-x-auto" style={{ maxHeight: '33vh' }}>
             <div className="flex justify-between items-center mb-2">
                 <h2 className="text-lg font-semibold text-gray-900">Child Systems</h2>
                 <button
@@ -43,7 +43,6 @@ export default function ChildSystemsTable({ parentSystem }: Props) {
             <table className="w-full border border-gray-400 text-sm">
                 <thead className="bg-gray-100">
                 <tr>
-                    <th className="p-2 border text-gray-600 text-left">System ID</th>
                     <th className="p-2 border text-gray-600 text-left">Name</th>
                     <th className="p-2 border text-gray-600 text-left">Category</th>
                     <th className="p-2 border text-gray-600">Action</th>
@@ -57,7 +56,6 @@ export default function ChildSystemsTable({ parentSystem }: Props) {
                 )}
                 {children.map((child) => (
                     <tr key={child.id} className="hover:bg-gray-50">
-                        <td className="pl-2 pt-1 pb-1 border text-gray-700">{child.id}</td>
                         <td className="pl-2 pt-1 pb-1 border text-gray-700">{child.name}</td>
                         <td className="pl-2 pt-1 pb-1 border text-gray-700">{child.category}</td>
                         <td className="pl-2 pt-1 pb-1 border text-center space-x-2 text-gray-700">
@@ -78,6 +76,7 @@ export default function ChildSystemsTable({ parentSystem }: Props) {
                 ))}
                 </tbody>
             </table>
+
 
             <SystemModal
                 isOpen={showModal}

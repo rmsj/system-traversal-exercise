@@ -43,14 +43,14 @@ export default function SystemInterfacesTable({ currentSystemId }: Props) {
     }
 
     return (
-        <div className="mt-0">
+        <div className="mt-0 overflow-x-auto" style={{ maxHeight: '33vh' }}>
             <div className="flex justify-between items-center mb-2">
-                <h2 className="text-lg font-semibold text-gray-900">Child Systems</h2>
+                <h2 className="text-lg font-semibold text-gray-900">System Interfaces</h2>
                 <button
                     onClick={() => { setEditingInterface(null); setShowModal(true) }}
                     className="bg-green-600 text-white px-3 py-1.5 text-sm rounded hover:bg-green-700"
                 >
-                    + Add Child
+                    + Add Interface
                 </button>
             </div>
 
@@ -77,6 +77,7 @@ export default function SystemInterfacesTable({ currentSystemId }: Props) {
                             <td className="pl-2 pt-1 pb-1 border text-gray-700">{isSource ? iface.source.name : iface.target.name}</td>
                             <td className="pl-2 pt-1 pb-1 border text-gray-700">{iface.connection_type}</td>
                             <td className="pl-2 pt-1 pb-1 border text-gray-700">{iface.directional === 1 ? 'Directed' : 'Undirected'}</td>
+                            <td className="pl-2 pt-1 pb-1 border text-gray-700">{!isSource ? iface.target.name : iface.source.name}</td>
                             <td className="pl-2 pt-1 pb-1 border text-center space-x-2 text-gray-700">
                                 <button
                                     onClick={() => { setEditingInterface(iface); setShowModal(true) }}
@@ -98,6 +99,7 @@ export default function SystemInterfacesTable({ currentSystemId }: Props) {
             </table>
 
             <SystemInterfaceModal
+                currentSystemId={currentSystemId}
                 isOpen={showModal}
                 onClose={() => setShowModal(false)}
                 editingInterface={editingInterface}
