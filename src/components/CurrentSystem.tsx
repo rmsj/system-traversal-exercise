@@ -4,7 +4,7 @@ import {
 } from "@/lib/supabase";
 import {useEffect, useState} from "react";
 import ChildSystemsTable from "@/components/ChildSystemTable";
-import SystemFormModal from '@/components/SystemForm'
+import SystemFormModal from '@/components/SystemForm';
 import SystemInterfacesTable from "@/components/SystemInterfacesTable";
 
 interface Props {
@@ -15,37 +15,39 @@ interface Props {
 
 export default function CurrentSystem({currentSystemId, onSystemChange, onUpdate}: Props) {
 
-    const [system, setSystem] = useState<SystemRow | null>(null)
-    const [parentSystem, setParentSystem] = useState<SystemRow | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [isEditOpen, setIsEditOpen] = useState(false)
-    const [isNewOpen, setIsNewOpen] = useState(false)
+    const [system, setSystem] = useState<SystemRow | null>(null);
+    const [parentSystem, setParentSystem] = useState<SystemRow | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isNewOpen, setIsNewOpen] = useState(false);
 
     useEffect(() => {
         if (currentSystemId) {
             getSystemById(currentSystemId).then(sys => {
-                setSystem(sys)
+                setSystem(sys);
                 if (sys?.parent_id) {
-                    getSystemById(sys.parent_id).then(setParentSystem)
+                    getSystemById(sys.parent_id).then(setParentSystem);
                 }
-            }).finally(() => setLoading(false))
+            }).finally(() => setLoading(false));
         }
-    }, [system, currentSystemId])
+    }, [currentSystemId]);
 
     const refreshSystem = async (newID: number) => {
-        const idToUse = newID ?? currentSystemId
-        const updated = await getSystemById(idToUse)
-        setSystem(updated)
+        const idToUse = newID ?? currentSystemId;
+        const updated = await getSystemById(idToUse);
+        setSystem(updated);
         if (updated?.parent_id) {
-            const parent = await getSystemById(updated.parent_id)
-            setParentSystem(parent)
+            const parent = await getSystemById(updated.parent_id);
+            setParentSystem(parent);
         }
         if (idToUse !== currentSystemId) {
-            onSystemChange(idToUse)
+            onSystemChange(idToUse);
         }
     }
 
-    if (loading) return <div className="p-4">Loading...</div>
+    if (loading) {
+        return <div className="p-4">Loading...</div>;
+    }
 
     return (
         <div className="p-6">
@@ -121,5 +123,5 @@ export default function CurrentSystem({currentSystemId, onSystemChange, onUpdate
                 parentSystem={isNewOpen ? null : parentSystem}
             />
         </div>
-    )
+    );
 }

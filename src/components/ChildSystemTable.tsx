@@ -1,29 +1,29 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { SystemRow, deleteSystem, getDescendents } from '@/lib/supabase'
-import SystemModal from './SystemForm'
+import { useEffect, useState } from 'react';
+import { SystemRow, deleteSystem, getDescendents } from '@/lib/supabase';
+import SystemModal from './SystemForm';
 
 interface Props {
     parentSystem: SystemRow;
-    onSystemChange: (newID: number | null) => void
-    onUpdate: () => void
+    onSystemChange: (newID: number | null) => void;
+    onUpdate: () => void;
 }
 
 export default function ChildSystemsTable({ parentSystem, onSystemChange, onUpdate }: Props) {
-    const [children, setChildren] = useState<SystemRow[]>([])
-    const [showModal, setShowModal] = useState(false)
-    const [editingSystem, setEditingSystem] = useState<SystemRow | null>(null)
+    const [children, setChildren] = useState<SystemRow[]>([]);
+    const [showModal, setShowModal] = useState(false);
+    const [editingSystem, setEditingSystem] = useState<SystemRow | null>(null);
 
     const loadChildren = async () => {
-        const result = await getDescendents(parentSystem.id)
-        setChildren(result)
-        onUpdate()
+        const result = await getDescendents(parentSystem.id);
+        setChildren(result);
+        onUpdate();
     }
 
     useEffect(() => {
-        loadChildren()
-    }, [parentSystem.id])
+        loadChildren();
+    }, [parentSystem.id]);
 
     const handleSuccess = async () => {
         await loadChildren();
@@ -31,11 +31,13 @@ export default function ChildSystemsTable({ parentSystem, onSystemChange, onUpda
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Are you sure you want to delete this system?')) return
-        await deleteSystem(id)
-        loadChildren()
-        onUpdate()
-    }
+        if (!confirm('Are you sure you want to delete this system?')) {
+            return;
+        }
+        await deleteSystem(id);
+        loadChildren();
+        onUpdate();
+    };
 
     return (
         <div className="mt-0 overflow-x-auto" style={{ maxHeight: '33vh' }}>
@@ -97,5 +99,5 @@ export default function ChildSystemsTable({ parentSystem, onSystemChange, onUpda
                 onSuccess={handleSuccess}
             />
         </div>
-    )
+    );
 }

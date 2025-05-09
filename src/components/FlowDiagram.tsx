@@ -25,7 +25,7 @@ import {
   getTopLevelSystemsAndChildren,
   SystemRow
 } from '@/lib/supabase';
-import {InterfacesData} from "@/types/supabase";
+import {InterfacesData} from "@/types/interface";
 import dagre from '@dagrejs/dagre';
 
 interface Props {
@@ -140,6 +140,8 @@ export default function FlowDiagram({ currentSystemId, chartVersion, onSystemCha
 
   useEffect(() => {
     const load = async () => {
+
+      console.log("Loading chart version: " + chartVersion);
 
       let interfaces: InterfacesData[] | null = [];
       let systems: SystemRow[] | null = [];

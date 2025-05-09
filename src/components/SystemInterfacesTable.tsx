@@ -8,7 +8,7 @@ import {
     SystemInterfaceRow
 } from '@/lib/supabase';
 import SystemInterfaceModal from './SystemInterfaceForm';
-import {InterfacesData} from "@/types/supabase";
+import {InterfacesData} from "@/types/interface";
 
 interface Props {
     currentSystemId: number;

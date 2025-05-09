@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react'
 import { SystemInsert, SystemRow, SystemUpdate, insertSystem, updateSystem } from '@/lib/supabase'
 
 interface Props {
-    isOpen: boolean
-    onClose: () => void
-    parentSystem?: SystemRow | null
-    editingSystem?: SystemRow | null
-    onSuccess: (systemID: number) => void
+    isOpen: boolean;
+    onClose: () => void;
+    parentSystem?: SystemRow | null;
+    editingSystem?: SystemRow | null;
+    onSuccess: (systemID: number) => void;
 }
 
 export default function SystemModal({
@@ -18,78 +18,84 @@ export default function SystemModal({
                                         editingSystem = null,
                                         onSuccess,
                                     }: Props) {
-    const [formData, setFormData] = useState({ name: '', category: '' })
-    const [error, setError] = useState<string | null>(null)
-    const [loading, setLoading] = useState(false)
-    const [success, setSuccess] = useState(false)
+    const [formData, setFormData] = useState({ name: '', category: '' });
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
 
-    const isEditing = Boolean(editingSystem)
+    const isEditing = Boolean(editingSystem);
 
     useEffect(() => {
         if (isOpen && editingSystem) {
             console.log("editing system", editingSystem);
-            setFormData({ name: editingSystem.name, category: editingSystem.category })
+            setFormData({ name: editingSystem.name, category: editingSystem.category });
         } else {
-            setFormData({ name: '', category: '' })
+            setFormData({ name: '', category: '' });
         }
-    }, [isOpen, editingSystem])
+    }, [isOpen, editingSystem]);
 
     const validate = () => {
-        const { name, category } = formData
-        if (name.length < 3 || name.length > 50) return 'System name must be between 3 and 50 characters.'
-        if (category.length < 3 || category.length > 50) return 'Category must be between 3 and 50 characters.'
-        return null
-    }
+        const { name, category } = formData;
+        if (name.length < 3 || name.length > 50) {
+            return 'System name must be between 3 and 50 characters.';
+        }
+        if (category.length < 3 || category.length > 50) {
+            return 'Category must be between 3 and 50 characters.';
+        }
+        return null;
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target
-        setFormData(prev => ({ ...prev, [name]: value }))
-    }
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        const validationError = validate()
+        e.preventDefault();
+        const validationError = validate();
         if (validationError) {
-            setError(validationError)
-            return
+            setError(validationError);
+            return;
         }
 
-        setLoading(true)
-        setError(null)
-        setSuccess(false)
+        setLoading(true);
+        setError(null);
+        setSuccess(false);
 
         try {
-            let response: SystemRow
+            let response: SystemRow;
             if (isEditing && editingSystem) {
                 const updates: SystemUpdate = {
                     name: formData.name,
                     category: formData.category,
-                }
-                response = await updateSystem(editingSystem.id, updates)
+                };
+                response = await updateSystem(editingSystem.id, updates);
             } else {
                 const insert = {
                     name: formData.name,
                     category: formData.category,
                     parent_id: parentSystem?.id ?? null,
-                }
-                response = await insertSystem(insert as SystemInsert)
+                };
+                response = await insertSystem(insert as SystemInsert);
             }
 
-            onSuccess(response.id)
-            onClose()
+            onSuccess(response.id);
+            onClose();
         } catch (err: unknown) {
             if (err instanceof Error) {
-                setError(err.message)
+                setError(err.message);
             } else {
-                setError('An unknown error occurred')
+                setError('An unknown error occurred');
             }
             setTimeout(function() { setError(null); }, 5000);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
     }
 
-    if (!isOpen) return null
+    if (!isOpen) {
+        return null;
+    }
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -164,5 +170,5 @@ export default function SystemModal({
                 </form>
             </div>
         </div>
-    )
+    );
 }

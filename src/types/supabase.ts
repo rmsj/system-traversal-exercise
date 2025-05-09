@@ -6,25 +6,6 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type InterfacesData = {
-    source_system_id: number;
-    target_system_id: number;
-    connection_type: string;
-    directional: number;
-    source: {
-        id: number;
-        name: string;
-        category: string;
-        parent_id: number | null;
-    };
-    target: {
-        id: number;
-        name: string;
-        category: string;
-        parent_id: number | null;
-    };
-}
-
 export type Database = {
   public: {
     Tables: {
@@ -90,7 +71,40 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_interface: {
+        Args: {
+          p_source_id: number
+          p_target_id: number
+          p_connection_type: string
+          p_directional: number
+        }
+        Returns: undefined
+      }
+      create_system: {
+        Args: { p_parent_id: number; p_name: string; p_category: string }
+        Returns: number
+      }
+      delete_interface: {
+        Args: { p_source_id: number; p_target_id: number }
+        Returns: undefined
+      }
+      delete_system: {
+        Args: { p_id: number }
+        Returns: undefined
+      }
+      update_interface: {
+        Args: {
+          p_source_id: number
+          p_target_id: number
+          p_connection_type: string
+          p_directional: number
+        }
+        Returns: undefined
+      }
+      update_system: {
+        Args: { p_id: number; p_name: string; p_category: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

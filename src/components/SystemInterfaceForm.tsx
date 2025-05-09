@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
 import {
     SystemRow,
     SystemInterfaceRow,
@@ -9,69 +9,73 @@ import {
     insertSystemInterface,
     updateSystemInterface,
     getCurrentSystemAndDescendents, getAllSystems
-} from '@/lib/supabase'
+} from '@/lib/supabase';
 
 interface Props {
     currentSystemId: number;
-    isOpen: boolean
-    onClose: () => void
-    editingInterface: SystemInterfaceRow | null
-    onSuccess: () => void
+    isOpen: boolean;
+    onClose: () => void;
+    editingInterface: SystemInterfaceRow | null;
+    onSuccess: () => void;
 }
 
 export default function SystemInterfaceModal({currentSystemId, isOpen, onClose, editingInterface = null, onSuccess}: Props) {
 
-    const [formData, setFormData] = useState({ connection_type: '', directional: 1, source_system_id: 0, target_system_id: 0 })
-    const [error, setError] = useState<string | null>(null)
-    const [loading, setLoading] = useState(false)
-    const [success, setSuccess] = useState(false)
-    const [sourceSystems, setSourceSystems] = useState<SystemRow[]>([])
-    const [targetSystems, setTargetSystems] = useState<SystemRow[]>([])
+    const [formData, setFormData] = useState({ connection_type: '', directional: 1, source_system_id: 0, target_system_id: 0 });
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [sourceSystems, setSourceSystems] = useState<SystemRow[]>([]);
+    const [targetSystems, setTargetSystems] = useState<SystemRow[]>([]);
 
-    const isEditing = Boolean(editingInterface)
+    const isEditing = Boolean(editingInterface);
 
     useEffect(() => {
         if (isOpen && editingInterface) {
-            setFormData({ connection_type: editingInterface.connection_type, directional: editingInterface.directional, source_system_id: editingInterface.source_system_id, target_system_id: editingInterface.target_system_id })
+            setFormData({ connection_type: editingInterface.connection_type, directional: editingInterface.directional, source_system_id: editingInterface.source_system_id, target_system_id: editingInterface.target_system_id });
         } else {
-            setFormData({ connection_type: '', directional: 1, source_system_id: 0, target_system_id: 0 })
+            setFormData({ connection_type: '', directional: 1, source_system_id: 0, target_system_id: 0 });
         }
-    }, [isOpen, editingInterface])
+    }, [isOpen, editingInterface]);
 
     useEffect(() => {
         if (isOpen) {
             getCurrentSystemAndDescendents(currentSystemId).then(value => {
-                setSourceSystems(value)
+                setSourceSystems(value);
             })
             getAllSystems().then(value => {
-                setTargetSystems(value)
+                setTargetSystems(value);
             })
         }
-    }, [isOpen, currentSystemId, formData])
+    }, [isOpen, currentSystemId, formData]);
 
     const validate = () => {
-        const { connection_type, directional } = formData
-        if (connection_type.length < 2 || connection_type.length > 50) return 'Connection type must be between 2 and 50 characters.'
-        if (directional != 1 && directional != 2) return 'Directional must be directed or undirected.'
-        return null
+        const { connection_type, directional } = formData;
+        if (connection_type.length < 2 || connection_type.length > 50) {
+            return 'Connection type must be between 2 and 50 characters.';
+        }
+        if (directional != 1 && directional != 2)  {
+            return 'Directional must be directed or undirected.';
+        }
+        return null;
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target
-        setFormData(prev => ({ ...prev, [name]: value }))
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        const validationError = validate()
+        e.preventDefault();
+        const validationError = validate();
         if (validationError) {
-            setError(validationError)
-            return
+            setError(validationError);
+            return;
         }
 
-        setLoading(true)
-        setError(null)
-        setSuccess(false)
+        setLoading(true);
+        setError(null);
+        setSuccess(false);
 
         try {
             if (isEditing && editingInterface) {
@@ -80,33 +84,35 @@ export default function SystemInterfaceModal({currentSystemId, isOpen, onClose, 
                     directional: formData.directional,
                     source_system_id: editingInterface.source_system_id,
                     target_system_id: editingInterface.target_system_id,
-                }
-                await updateSystemInterface(editingInterface.source_system_id, editingInterface.target_system_id, updates)
+                };
+                await updateSystemInterface(editingInterface.source_system_id, editingInterface.target_system_id, updates);
             } else {
                 const insert = {
                     connection_type: formData.connection_type,
                     directional: formData.directional,
                     source_system_id: formData?.source_system_id ?? null,
                     target_system_id: formData?.target_system_id ?? null,
-                }
-                await insertSystemInterface(insert as SystemInterfaceInsert)
+                };
+                await insertSystemInterface(insert as SystemInterfaceInsert);
             }
 
-            onSuccess()
-            onClose()
+            onSuccess();
+            onClose();
         } catch (err: unknown) {
             if (err instanceof Error) {
-                setError(err.message)
+                setError(err.message);
             } else {
-                setError('An unknown error occurred')
+                setError('An unknown error occurred');
             }
             setTimeout(function() { setError(null); }, 5000);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
     }
 
-    if (!isOpen) return null
+    if (!isOpen) {
+        return null;
+    }
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -209,5 +215,5 @@ export default function SystemInterfaceModal({currentSystemId, isOpen, onClose, 
                 </form>
             </div>
         </div>
-    )
+    );
 }
