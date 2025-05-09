@@ -17,6 +17,7 @@ const FlowDiagram = dynamic(
 export default function Home() {
 
     const [currentSystemId, setCurrentSystemId] = useState<number | null>(null)
+    const [chartVersion, setChartVersion] = useState<number>(1)
 
   return (
     <div className="container mx-auto p-4">
@@ -25,6 +26,7 @@ export default function Home() {
           <div style={{ width: '60%', float: 'left' }}>
               <FlowDiagram
                   currentSystemId={currentSystemId}
+                  chartVersion={chartVersion}
                   onSystemChange={(newId: number | null) => setCurrentSystemId(newId)}
               />
           </div>
@@ -32,6 +34,7 @@ export default function Home() {
               {currentSystemId && <CurrentSystem
                   currentSystemId={currentSystemId}
                   onSystemChange={(newId: number | null) => setCurrentSystemId(newId)}
+                  onUpdate={() => setChartVersion(Math.random())}
               />}
 
               {!currentSystemId && <div

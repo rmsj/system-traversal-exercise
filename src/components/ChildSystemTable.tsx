@@ -5,10 +5,12 @@ import { SystemRow, deleteSystem, getDescendents } from '@/lib/supabase'
 import SystemModal from './SystemForm'
 
 interface Props {
-    parentSystem: SystemRow
+    parentSystem: SystemRow;
+    onSystemChange: (newID: number | null) => void
+    onUpdate: () => void
 }
 
-export default function ChildSystemsTable({ parentSystem }: Props) {
+export default function ChildSystemsTable({ parentSystem, onSystemChange, onUpdate }: Props) {
     const [children, setChildren] = useState<SystemRow[]>([])
     const [showModal, setShowModal] = useState(false)
     const [editingSystem, setEditingSystem] = useState<SystemRow | null>(null)
@@ -16,16 +18,23 @@ export default function ChildSystemsTable({ parentSystem }: Props) {
     const loadChildren = async () => {
         const result = await getDescendents(parentSystem.id)
         setChildren(result)
+        onUpdate()
     }
 
     useEffect(() => {
         loadChildren()
     }, [parentSystem.id])
 
+    const handleSuccess = async () => {
+        await loadChildren();
+        onUpdate();
+    };
+
     const handleDelete = async (id: number) => {
         if (!confirm('Are you sure you want to delete this system?')) return
         await deleteSystem(id)
         loadChildren()
+        onUpdate()
     }
 
     return (
@@ -56,7 +65,9 @@ export default function ChildSystemsTable({ parentSystem }: Props) {
                 )}
                 {children.map((child) => (
                     <tr key={child.id} className="hover:bg-gray-50">
-                        <td className="pl-2 pt-1 pb-1 border text-gray-700">{child.name}</td>
+                        <td className="pl-2 pt-1 pb-1 border text-gray-700">
+                            <a onClick={() => onSystemChange(child.id)} href="#" className="font-medium text-blue-600 dark:text-blue-500 hover:underline">{child.name}</a>
+                        </td>
                         <td className="pl-2 pt-1 pb-1 border text-gray-700">{child.category}</td>
                         <td className="pl-2 pt-1 pb-1 border text-center space-x-2 text-gray-700">
                             <button
@@ -83,7 +94,7 @@ export default function ChildSystemsTable({ parentSystem }: Props) {
                 onClose={() => setShowModal(false)}
                 parentSystem={parentSystem}
                 editingSystem={editingSystem}
-                onSuccess={loadChildren}
+                onSuccess={handleSuccess}
             />
         </div>
     )

@@ -2,24 +2,27 @@
 
 import {type MouseEvent as ReactMouseEvent, useCallback, useEffect, useState} from 'react';
 import {
-  ReactFlow,
-  MiniMap,
-  Controls,
-  Background,
-  useNodesState,
-  useEdgesState,
   addEdge,
-  Node,
-  Edge,
+  Background,
+  BackgroundVariant,
   Connection,
   ConnectionMode,
+  Controls,
+  Edge,
+  MiniMap,
+  Node,
   Panel,
-  BackgroundVariant,
+  Position,
+  ReactFlow,
+  useEdgesState,
+  useNodesState,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import {
-  getAllInterfacesForSystemAndDescendants, getCurrentSystemAndDescendents, getDescendents,
-  getTopLevelInterfacesAndDescendants, getTopLevelSystemsAndChildren,
+  getAllInterfacesForSystemAndDescendants,
+  getCurrentSystemAndDescendents,
+  getTopLevelInterfacesAndDescendants,
+  getTopLevelSystemsAndChildren,
   SystemRow
 } from '@/lib/supabase';
 import {InterfacesData} from "@/types/supabase";
@@ -27,6 +30,7 @@ import dagre from '@dagrejs/dagre';
 
 interface Props {
   currentSystemId: number | null;
+  chartVersion: number;
   onSystemChange: (newID: number | null) => void;
 }
 
@@ -38,7 +42,7 @@ const initialNodes: Node[] = [];
 
 const initialEdges: Edge[] = [];
 
-export default function FlowDiagram({ currentSystemId, onSystemChange }: Props) {
+export default function FlowDiagram({ currentSystemId, chartVersion, onSystemChange }: Props) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [layoutDirection, setLayoutDirection] = useState<'TB' | 'LR'>('TB');
@@ -76,6 +80,8 @@ export default function FlowDiagram({ currentSystemId, onSystemChange }: Props) 
         id: sys.id.toString(),
         data: { label: sys.name },
         position: { x: 0, y: 0 },
+        targetPosition:layoutDirection == "TB" ? Position.Top : Position.Left,
+        sourcePosition:layoutDirection == "TB" ? Position.Bottom : Position.Right,
         style: {
           background: generateColor(idx),
           color: 'white',
@@ -160,7 +166,7 @@ export default function FlowDiagram({ currentSystemId, onSystemChange }: Props) 
     };
 
     load();
-  }, [currentSystemId]);
+  }, [currentSystemId, layoutDirection, chartVersion]);
 
   const onConnect = useCallback(
       (params: Connection) => setEdges((eds) => addEdge(params, eds)),

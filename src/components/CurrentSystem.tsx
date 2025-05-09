@@ -9,10 +9,11 @@ import SystemInterfacesTable from "@/components/SystemInterfacesTable";
 
 interface Props {
     currentSystemId: number | null;
-    onSystemChange: (newID: number | null) => void
+    onSystemChange: (newID: number | null) => void;
+    onUpdate: () => void;
 }
 
-export default function CurrentSystem({currentSystemId, onSystemChange}: Props) {
+export default function CurrentSystem({currentSystemId, onSystemChange, onUpdate}: Props) {
 
     const [system, setSystem] = useState<SystemRow | null>(null)
     const [parentSystem, setParentSystem] = useState<SystemRow | null>(null)
@@ -90,11 +91,19 @@ export default function CurrentSystem({currentSystemId, onSystemChange}: Props) 
             </div>
 
             {system && <div className="bg-white shadow rounded-lg p-6 mb-6">
-                <ChildSystemsTable parentSystem={system} />
+                <ChildSystemsTable
+                    parentSystem={system}
+                    onSystemChange={onSystemChange}
+                    onUpdate={onUpdate}
+                />
             </div>}
 
             {system && <div className="bg-white shadow rounded-lg p-6 mb-6">
-                <SystemInterfacesTable currentSystemId={system.id} />
+                <SystemInterfacesTable
+                    currentSystemId={system.id}
+                    onSystemChange={onSystemChange}
+                    onUpdate={onUpdate}
+                />
             </div>}
 
             <SystemFormModal

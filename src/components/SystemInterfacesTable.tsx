@@ -1,46 +1,55 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
 import {
     getDescendents,
     getAllInterfacesForSystemAndDescendants,
     deleteSystemInterface,
     SystemInterfaceRow
-} from '@/lib/supabase'
-import SystemInterfaceModal from './SystemInterfaceForm'
+} from '@/lib/supabase';
+import SystemInterfaceModal from './SystemInterfaceForm';
 import {InterfacesData} from "@/types/supabase";
 
 interface Props {
-    currentSystemId: number
+    currentSystemId: number;
+    onSystemChange: (newID: number | null) => void;
+    onUpdate: () => void;
 }
 
-export default function SystemInterfacesTable({ currentSystemId }: Props) {
-    const [systemInterfaces, setSystemInterfaces] = useState<InterfacesData[]>([])
-    const [sistemIds, setSystemIds] = useState<number[]>([])
-    const [showModal, setShowModal] = useState(false)
-    const [editingInterface, setEditingInterface] = useState<SystemInterfaceRow | null>(null)
+export default function SystemInterfacesTable({ currentSystemId, onSystemChange, onUpdate }: Props) {
+    const [systemInterfaces, setSystemInterfaces] = useState<InterfacesData[]>([]);
+    const [sistemIds, setSystemIds] = useState<number[]>([]);
+    const [showModal, setShowModal] = useState(false);
+    const [editingInterface, setEditingInterface] = useState<SystemInterfaceRow | null>(null);
 
 
     const loadChildren = async () => {
-        const result = await getAllInterfacesForSystemAndDescendants(currentSystemId)
+        const result = await getAllInterfacesForSystemAndDescendants(currentSystemId);
         if (result){
-            setSystemInterfaces(result)
-            const ids: number[] = [currentSystemId]
-            const children = await getDescendents(currentSystemId)
-            ids.push(...children.map(c => c.id))
-            setSystemIds(ids)
+            setSystemInterfaces(result);
+            const ids: number[] = [currentSystemId];
+            const children = await getDescendents(currentSystemId);
+            ids.push(...children.map(c => c.id));
+            setSystemIds(ids);
         }
-    }
+    };
 
     useEffect(() => {
-        loadChildren()
-    }, [currentSystemId])
+        loadChildren();
+    }, [currentSystemId]);
+
+    const handleSuccess = async () => {
+        await loadChildren();
+        onUpdate();
+    };
 
     const handleDelete = async (sourceId: number, targetId: number) => {
-        if (!confirm('Are you sure you want to delete this system interface?')) return
-        await deleteSystemInterface(sourceId, targetId)
-        loadChildren()
-    }
+        if (!confirm('Are you sure you want to delete this system interface?')) return;
+        await deleteSystemInterface(sourceId, targetId);
+        loadChildren();
+        onSystemChange(currentSystemId);
+        onUpdate();
+    };
 
     return (
         <div className="mt-0 overflow-x-auto" style={{ maxHeight: '33vh' }}>
@@ -103,8 +112,8 @@ export default function SystemInterfacesTable({ currentSystemId }: Props) {
                 isOpen={showModal}
                 onClose={() => setShowModal(false)}
                 editingInterface={editingInterface}
-                onSuccess={loadChildren}
+                onSuccess={handleSuccess}
             />
         </div>
-    )
+    );
 }
