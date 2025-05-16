@@ -111,13 +111,14 @@ export default function CurrentSystem({currentSystemId, onSystemChange, onUpdate
             <SystemFormModal
                 isOpen={isEditOpen || isNewOpen}
                 onClose={() => {
-                    setIsEditOpen(false)
-                    setIsNewOpen(false)
+                    setIsEditOpen(false);
+                    setIsNewOpen(false);
                 }}
                 onSuccess={(newID: number) => {
-                    setIsEditOpen(false)
-                    setIsNewOpen(false)
-                    refreshSystem(newID)
+                    setIsEditOpen(false);
+                    setIsNewOpen(false);
+                    refreshSystem(newID);
+                    onUpdate();
                 }}
                 editingSystem={isNewOpen ? null : system}
                 parentSystem={isNewOpen ? null : parentSystem}
